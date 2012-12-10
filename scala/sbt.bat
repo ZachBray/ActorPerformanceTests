@@ -1,0 +1,15 @@
+java -ea                          ^
+	-Djava.net.preferIPv4Stack=true ^
+	-XX:+AggressiveOpts             ^
+	-XX:+UseParNewGC                ^
+	-XX:+UseConcMarkSweepGC         ^
+	-XX:+CMSParallelRemarkEnabled   ^
+	-XX:+CMSClassUnloadingEnabled   ^
+	-XX:MaxPermSize=1024m           ^
+	-XX:SurvivorRatio=128           ^
+	-XX:MaxTenuringThreshold=0      ^
+	-Xss8M                          ^
+	-Xms128M                        ^
+	-Xmx1024M                        ^
+	-server                         ^
+	-jar sbt-launch.jar
