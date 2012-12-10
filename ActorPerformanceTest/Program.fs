@@ -8,26 +8,22 @@ let test name f g =
    let test countPerThread =
       let threadCount = System.Environment.ProcessorCount
       let msgCount = threadCount * countPerThread
-      let incrementers =
-         Array.init threadCount (fun _ ->
-            async { for i = 1 to countPerThread do f 100L })
       let watch = Stopwatch.StartNew()
-      let finalCount =
-         async {
-            do! incrementers |> Async.Parallel |> Async.Ignore
-            return g()
-         } |> Async.RunSynchronously
+      let incrementers =
+         Array.Parallel.init threadCount (fun _ ->
+            for i = 1 to countPerThread do f 100L)
+      let finalCount = g()
+      watch.Stop()
       let expectedCount = int64 countPerThread * int64 threadCount * 100L 
       if finalCount <> expectedCount then
          failwith "Didn't work!"
-      watch.Stop()
       int (float msgCount / watch.Elapsed.TotalSeconds)
       
    // Warm up!
    test 10000 |> ignore<int>
    System.GC.Collect()
    // Real test
-   let msgsPerSecond = test 500000
+   let msgsPerSecond = test 3000000
    printfn "%s processed %i msgs/sec" name msgsPerSecond
 
 
@@ -47,9 +43,9 @@ let vanillaCounter =
       }
       loop 0L
 
-test "Vanilla Actor (MailboxProcessor)" 
-   (fun i -> vanillaCounter.Post <| Add i) 
-   (fun () -> vanillaCounter.PostAndReply(fun channel -> GetAndReset channel.Reply))
+//test "Vanilla Actor (MailboxProcessor)" 
+//   (fun i -> vanillaCounter.Post <| Add i) 
+//   (fun () -> vanillaCounter.PostAndReply(fun channel -> GetAndReset channel.Reply))
 
 
 open System.Threading
@@ -113,9 +109,9 @@ let simpleActor =
       }
       loop 0L
 
-test "Simple Actor" 
-   (fun i -> simpleActor.Post <| Add i) 
-   (fun () -> simpleActor.PostAndReply GetAndReset)
+//test "Simple Actor" 
+//   (fun i -> simpleActor.Post <| Add i) 
+//   (fun () -> simpleActor.PostAndReply GetAndReset)
 
 
 type 'a ISharedActor =
